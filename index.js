@@ -36,10 +36,41 @@ async function scrapeWebPage(url) {
 async function generateVectorEmbeddings({ text }){
   const embedding = await openai.embeddings.create({
     model: "text-embedding-3-small",
-    input: text,
+    input: text,  
     encoding_format: "float",
   });
   return embedding.data[0].embedding
 }
+
+
+// Ingest function - It will take a url, and this function is responsible to scrape the website recursively, make embeddings and store in chroma DB
+
+async function ingest(url = ''){
+  const { head, body, internalLinks} = await scrapeWebPage(url);
+  const headEmbedding = await generateVectorEmbeddings( {text: head });
+
+  const bodyChunks = chunkText(body, 2000);
+  for( const chunk of bodyChunks){
+  const bodyEmbedding = await generateVectorEmbeddings({ text: body });
+  }
+} 
+
+// We cannot pass too log body text directly to create embeddings as there is a limit to pass the characters
+
+// So we will write a function which will spit the text into the chunks as per the limit 
+
+function chunkText(text, chunkSize){
+  if(!text || chunkSize <= 0) return[];
+
+  const words = text.split(/\s+/);
+  const chunks = [];
+  
+  for(let i = 0; i < words.length; i += chunkSize){
+    chunks.push(words.slice(i, i + chunkSize).join(' '));
+  }
+
+  return chunks[]
+}
+
 
 scrapeWebPage("https://mahendrakumawat.xyz").then(console.log);
