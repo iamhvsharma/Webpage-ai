@@ -1,5 +1,11 @@
+import dotenv from 'dotenv';
+dotenv.config()
+
 import axios from "axios";
 import * as Cheerio from "cheerio";
+import OpenAI from "openai";
+
+const openai = new OpenAI();
 
 async function scrapeWebPage(url) {
   const { data } = await axios.get(url);
@@ -22,6 +28,18 @@ async function scrapeWebPage(url) {
   });
 
   return { head: pageHead, body: pageBody, internalLinks: internalLinks, externalLinks: externalLinks}
+}
+
+
+// Function to generate vector embeddings
+
+async function generateVectorEmbeddings({ text }){
+  const embedding = await openai.embeddings.create({
+    model: "text-embedding-3-small",
+    input: text,
+    encoding_format: "float",
+  });
+  return embedding.data[0].embedding
 }
 
 scrapeWebPage("https://mahendrakumawat.xyz").then(console.log);
